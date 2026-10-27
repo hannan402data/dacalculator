@@ -1,0 +1,12 @@
+{
+  "name": "estimated-da-calculator",
+  "version": "1.0.0",
+  "description": "Estimated DA calculator with live USD/INR rate",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.0.0" },
+  "build": { "appId": "com.agency.estimatedda", "productName": "Estimated DA", "win": { "target": "nsis" } }
+}

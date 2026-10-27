@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Estimated DA Calculator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:14px system-ui,sans-serif;background:#eceff1;display:flex;height:100vh}
+#form{width:380px;overflow:auto;padding:14px;background:#fff;border-right:1px solid #ddd}
+#form h3{margin:16px 0 4px;font-size:12px;color:#8b2a2a;text-transform:uppercase;letter-spacing:.5px}
+label{display:block;font-size:12px;color:#555;margin-top:6px}
+input[type=text],input[type=number],input[type=date]{width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px}
+.row{display:flex;gap:8px}.row>div{flex:1}
+.chk{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:#333}
+button{padding:9px 14px;margin:10px 6px 0 0;cursor:pointer;border:0;border-radius:4px;background:#8b2a2a;color:#fff}
+button.g{background:#555}
+#fxs{font-size:12px;color:#555;margin-top:6px}
+#view{flex:1;overflow:auto;padding:20px}
+#sheet{background:#fff;width:800px;margin:auto;padding:20px 26px;font-family:Cambria,"Times New Roman",serif;color:#000;font-size:14px;box-shadow:0 1px 6px #0003}
+.title{background:#eee;border-top:1px solid #000;border-bottom:1px solid #000;text-align:center;color:#8b2a2a;font-weight:bold;font-size:26px;line-height:1.1}
+table{border-collapse:collapse;width:100%}
+.hd{border-bottom:1px solid #000}
+.hd>tbody>tr>td{vertical-align:top;padding:0}
+.hl{width:55%;padding:2px 4px!important;display:flex;flex-direction:column;justify-content:space-between;height:100%}
+.hr td{padding:2px 4px;height:25px}
+.hr td:first-child{width:90px;background:#f4f4f4}
+.hr td:last-child{border-left:1px solid #000;font-weight:bold}
+.sv{margin-top:14px}
+.sv th{text-align:left;background:#eee;padding:4px}
+.sv th.a{text-align:right;border-left:1px solid #000;font-size:18px}
+.sv td{padding:2px 4px;height:25px}
+.sv td.a{text-align:right;border-left:1px solid #000;width:150px}
+.sv td.r{text-align:right;width:70px}
+.sv tr.h td{font-weight:bold;padding-top:14px}
+.sv tr.t td{border-top:1px solid #000}
+.sv tr.g td{border-top:1px solid #000;border-bottom:2px solid #000;font-weight:bold}
+.sv td.lb{text-align:right}
+@media print{
+ body{display:block;background:#fff;height:auto}
+ #form{display:none}#view{padding:0;overflow:visible}
+ #sheet{box-shadow:none;width:100%;padding:0}
+ @page{size:A4;margin:12mm}
+}
+</style></head>
+<body>
+<div id="form">
+ <h2 style="margin:0">Estimated DA</h2>
+ <h3>Exchange rate (USD → INR)</h3>
+ <div id="fxs">Fetching live rate…</div>
+ <div class="row"><div><label>Markup / bank margin (₹)</label><input type="number" step="0.01" data-k="markup" value="0"></div>
+ <div><label>Manual rate</label><input type="number" step="0.01" data-k="manual" value="96"></div></div>
+ <div class="chk"><input type="checkbox" data-k="roundUp" checked> Round up to whole ₹</div>
+ <div class="chk"><input type="checkbox" data-k="manualOn"> Use manual rate instead of live</div>
+
+ <h3>Vessel &amp; call</h3>
+ <label>To (Principal)</label><input type="text" data-k="to" value="Gandhar Coal &amp; Mines Private Limited">
+ <div class="row"><div><label>PDA No.</label><input type="text" data-k="pda" value=""></div>
+ <div><label>Date</label><input type="date" data-k="date"></div></div>
+ <label>Vessel</label><input type="text" data-k="vessel" value="MV. KIRAN EUROPE">
+ <label>Port</label><input type="text" data-k="port" value="BHAVNAGAR - ANCHORAGE">
+ <div class="row"><div><label>GRT</label><input type="number" data-k="grt" value="33044"></div>
+ <div><label>NRT</label><input type="number" data-k="nrt" value="19231"></div></div>
+ <label>Port stay</label><input type="text" data-k="stay" value="7 ~ 8 Days (agwwp)">
+ <label>Cargo</label><input type="text" data-k="cargo" value="Coal in Bulk">
+ <label>Quantity</label><input type="text" data-k="qty" value="54800 MT (Approx)">
+
+ <h3>Port related rates</h3>
+ <div class="row"><div><label>Port dues ₹/GRT</label><input type="number" step="0.001" data-k="pd" value="44.945"></div>
+ <div><label>VTMS ₹/GRT</label><input type="number" step="0.001" data-k="vtms" value="4"></div></div>
+ <div class="row"><div><label>Pilotage $/GRT (up to slab)</label><input type="number" step="0.001" data-k="p1" value="0.359"></div>
+ <div><label>Pilotage $/GRT (above)</label><input type="number" step="0.001" data-k="p2" value="0.233"></div></div>
+ <label>Pilotage slab (GRT)</label><input type="number" data-k="slab" value="30000">
+ <label>Marine Aids to Navigation ₹/NRT</label><input type="number" step="0.01" data-k="mans" value="7.5">
+
+ <h3>Tug hire (₹)</h3>
+ <div class="row"><div><label>Arrival formalities</label><input type="number" data-k="tug1" value="110000"></div>
+ <div><label>Departure</label><input type="number" data-k="tug2" value="110000"></div></div>
+
+ <h3>Agency charges</h3>
+ <div class="row"><div><label>Agency fees ($)</label><input type="number" data-k="fee" value="1500"></div>
+ <div><label>Conveyance ($)</label><input type="number" data-k="conv" value="500"></div></div>
+ <div class="row"><div><label>Co-ordination ($)</label><input type="number" data-k="coord" value="1500"></div>
+ <div><label>Excess draft (₹)</label><input type="number" data-k="excess" value="100000"></div></div>
+ <label>Extra item label</label><input type="text" data-k="xl" value="Expenses for filing 2nd IGM - Magdalla port">
+ <label>Extra item (₹)</label><input type="number" data-k="xa" value="50000">
+ <label>GST %</label><input type="number" data-k="gst" value="18">
+
+ <button id="pdf">Export PDF</button><button class="g" id="prt">Print</button><button class="g" id="rf">Refresh rate</button>
+</div>
+<div id="view"><div id="sheet"></div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const els=[...document.querySelectorAll('[data-k]')];
+const saved=JSON.parse(localStorage.getItem('da')||'{}');
+els.forEach(e=>{const k=e.dataset.k;if(k in saved){e.type==='checkbox'?e.checked=saved[k]:e.value=saved[k];}});
+const dt=els.find(e=>e.dataset.k==='date'); if(!dt.value) dt.value=new Date().toISOString().slice(0,10);
+
+const V=()=>{const o={};els.forEach(e=>o[e.dataset.k]=e.type==='checkbox'?e.checked:(e.type==='number'?+e.value||0:e.value));return o;};
+let live=+localStorage.getItem('fxLive')||0, liveTime=localStorage.getItem('fxTime')||'';
+
+async function fetchFx(){
+  const urls=[['https://open.er-api.com/v6/latest/USD',j=>j.rates.INR],['https://api.frankfurter.app/latest?from=USD&to=INR',j=>j.rates.INR]];
+  for(const [u,f] of urls){
+    try{const r=await fetch(u);const j=await r.json();const v=f(j);
+      if(v>0){live=v;liveTime=new Date().toLocaleString();localStorage.setItem('fxLive',v);localStorage.setItem('fxTime',liveTime);render();return;}}catch(e){}
+  }
+  render();
+}
+function rate(v){
+  let fx=v.manualOn?v.manual:live+v.markup;
+  if(v.roundUp&&!v.manualOn)fx=Math.ceil(fx);
+  return fx;
+}
+const R=n=>Math.round(n), F=n=>n.toFixed(2), D=s=>s.split('-').reverse().join('-');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+function render(){
+  const v=V(); localStorage.setItem('da',JSON.stringify(v));
+  const fx=rate(v);
+  $('fxs').textContent=live?`Live: ₹${live.toFixed(4)} per $ (${liveTime}) → Used: ₹${fx.toFixed(2)}${v.manualOn?' (manual)':''}`:'No live rate yet (offline?) – tick manual rate.';
+  const slabG=Math.min(v.grt,v.slab), aboveG=Math.max(0,v.grt-v.slab);
+  const A=[
+   [1,'Port Dues',v.pd.toFixed(3),'Per GRT','',R(v.grt*v.pd)],
+   [2,`Pilotage ($ ${v.p1})`,(v.p1*fx).toFixed(3),'Per GRT',`upto ${v.slab} GRT`,R(slabG*v.p1*fx)],
+   [3,`Pilotage ($ ${v.p2})`,(v.p2*fx).toFixed(3),'Per GRT',`Above ${v.slab} GRT`,R(aboveG*v.p2*fx)],
+   [4,'Vtms Charges',v.vtms.toFixed(3),'Per GRT','',R(v.grt*v.vtms)]];
+  const B=[[1,'Marine Aids to Navigation Dues',v.mans.toFixed(2),'Per NRT','',R(v.nrt*v.mans)]];
+  const C=[[1,'Tug Hire for Custom Boarding / Arrival Formalities','','','',R(v.tug1)],[2,'Tug Hire for Departure Formalities','','','',R(v.tug2)]];
+  const Dd=[[1,`Agency Fees (${v.fee}$)`,'','','',R(v.fee*fx)],[2,`Conveyance &amp; Communication (${v.conv}$)`,'','','',R(v.conv*fx)],
+   [3,`Co-Ordination Exp with Various Authorities (${v.coord}$)`,'','','',R(v.coord*fx)],
+   [4,'Co-Ordination Exp with Various Authorities - Excess Draft','','','',R(v.excess)],
+   [5,esc(v.xl),'','','',R(v.xa)]];
+  const sum=g=>g.reduce((s,r)=>s+r[5],0);
+  const sub=sum(A)+sum(B)+sum(C)+sum(Dd), gst=R(sub*v.gst/100), tot=sub+gst;
+  const blk=(L,t,g)=>`<tr class="h"><td>${L}</td><td colspan="4">${t}</td><td class="a"></td></tr>`+g.map(r=>
+   `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="r">${r[2]?'₹ '+r[2]:''}</td><td>${r[3]}${r[4]?' &nbsp; '+r[4]:''}</td><td></td><td class="a">${F(r[5])}</td></tr>`).join('');
+  $('sheet').innerHTML=`
+  <div class="title">ESTIMATED DA</div>
+  <table class="hd"><tr><td><div class="hl"><div>To,<br><b style="font-size:16px">${esc(v.to)}</b></div>
+   <div style="margin-top:60px">Cargo &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;<b>${esc(v.cargo)}</b><br>Quantity &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;<b>${esc(v.qty)}</b></div></div></td>
+   <td><table class="hr">
+    <tr><td>PDA No.</td><td>${esc(v.pda)}</td></tr><tr><td>Date</td><td>${D(v.date)}</td></tr>
+    <tr><td>Vessel</td><td>${esc(v.vessel)}</td></tr><tr><td>Port</td><td>${esc(v.port)}</td></tr>
+    <tr><td>GRT</td><td>${v.grt}</td></tr><tr><td>NRT</td><td>${v.nrt}</td></tr>
+    <tr><td>Port Stay</td><td>${esc(v.stay)}</td></tr><tr><td>Exchg. Rate</td><td>${F(fx)} <span style="font-weight:normal">₹ Per US $</span></td></tr>
+   </table></td></tr></table>
+  <table class="sv"><tr><th style="width:30px">Sr.</th><th colspan="4">Services</th><th class="a">Amount <span style="color:red">₹</span></th></tr>
+   ${blk('A','Port Related Charges',A)}${blk('B','Custom Related Charges',B)}${blk('C','Tug Hire Charges',C)}${blk('D','Agency Related Charges',Dd)}
+   <tr class="t"><td colspan="5" class="lb" style="padding-top:12px">Sub Total (A + B + C + D)- - -</td><td class="a" style="font-weight:bold">${F(sub)}</td></tr>
+   <tr><td colspan="5" class="lb">${v.gst}% &nbsp;&nbsp;&nbsp; GST on Above - - -</td><td class="a">${F(gst)}</td></tr>
+   <tr class="g"><td colspan="5" class="lb">Grand Total (₹) - - -</td><td class="a">${F(tot)}</td></tr>
+  </table>`;
+}
+els.forEach(e=>e.addEventListener('input',render));
+$('rf').onclick=fetchFx; $('prt').onclick=()=>window.print();
+$('pdf').onclick=()=>window.api.savePdf(`DA_${V().vessel.replace(/[^\w]+/g,'_')}_${V().date}.pdf`);
+render(); fetchFx(); setInterval(fetchFx,30*60*1000);
+</script></body></html>
